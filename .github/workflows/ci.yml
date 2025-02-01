@@ -39,7 +39,7 @@ jobs:
       - name: run tests 
         run: npx mocha test/app.test.js
 
-  build and push:
+  build:
     runs-on: ubuntu-latest
 
     steps:
