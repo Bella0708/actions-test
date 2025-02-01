@@ -13,6 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Run tests
+        run: echo Tests
+
       - name: Docker login
         uses: docker/login-action@v3
         with:
