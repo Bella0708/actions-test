@@ -25,5 +25,5 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Build docker image
-        run: docker build anestesia01/devops-test:v1.0
+        run: docker build -t anestesia01/devops-test:v1.0 .
 
