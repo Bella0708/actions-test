@@ -1,0 +1,60 @@
+name: Build and Push app image
+
+on:
+  push:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          eslint: true
+          prettier: true
+
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install deps
+        run: npm install
+
+      - name: run tests 
+        run: npx mocha test/app.test.js
+
+  build and push:
+    runs-on: ubuntu-latest
+    
+    - uses: actions/checkout@v4
+
+    - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: anestesia01
+          password: ${{ secrets.HUB_TOKEN }}
+
+      - name: Build docker image
+        run: docker build -t anestesia01/devops-test:v1.0 .
+
+      - name: Push
+        run: docker push anestesia01/devops-test:v1.0
+
+
+
