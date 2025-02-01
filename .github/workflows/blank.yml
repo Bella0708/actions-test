@@ -27,3 +27,6 @@ jobs:
       - name: Build docker image
         run: docker build -t anestesia01/devops-test:v1.0 .
 
+      - name: Push
+        run: docker push anestesia01/devops-test:v1.0
+
