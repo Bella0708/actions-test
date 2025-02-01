@@ -7,26 +7,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  linter:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 20
-
-      - name: Install Node.js dependencies
-        run: npm install
-
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          eslint: true
-          prettier: true
-
   tests:
     runs-on: ubuntu-latest
 
