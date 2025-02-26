@@ -7,10 +7,12 @@ pipeline {
         gitParameter(name: 'branch', type: 'PT_BRANCH', sortMode: 'DESCENDING_SMART', selectedValue: 'NONE', quickFilterEnabled: true)
     }
     environment {
-        REPO = "zabella/go_workers"
+        REPO = "zabella/node"
         DOCKER_IMAGE = 'node'
         DOCKER_TAG = 'apline'
         HOST = "44.203.170.192"
+        PORT = "3000"
+        SVC = "action"
         TOKEN = credentials('tokentell')
         CHAT_ID = "683028341"
         LINK = "<a href=\"${BUILD_URL}\">${JOB_NAME} #${BUILD_NUMBER}</a>"
@@ -52,9 +54,12 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'hub_token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                         sshCommand remote: remote, command: """
-                            git clone "$git_url" /var/www/action
-                            docker-compose -f /var/www/action/docker-compose.yml up -d
-            
+                            set -ex ; set -o pipefail
+                            docker login -u ${USERNAME} -p ${PASSWORD}
+                            docker pull "${env.REPO}:${env.BUILD_ID}"
+                            docker rm ${env.SVC} --force 2> /dev/null || true
+                            docker run -d -it -p ${env.PORT}:${env.PORT} --name ${env.SVC} "${env.REPO}:${env.BUILD_ID}"
+                        
                         """
                     }
                 }
