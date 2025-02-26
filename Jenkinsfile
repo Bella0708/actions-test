@@ -8,8 +8,8 @@ pipeline {
     }
     environment {
         REPO = "zabella/go_workers"
-        DOCKER_IMAGE = 'golang'
-        DOCKER_TAG = 'latest'
+        DOCKER_IMAGE = 'node'
+        DOCKER_TAG = 'apline'
         HOST = "44.203.170.192"
         TOKEN = credentials('tokentell')
         CHAT_ID = "683028341"
@@ -53,6 +53,7 @@ pipeline {
                     script {
                         sshCommand remote: remote, command: """
                             set -ex ; set -o pipefail
+                            sh 'docker-compose up -d
                             docker login -u ${USERNAME} -p ${PASSWORD}
                             docker pull "${env.REPO}:${env.BUILD_ID}"
                             docker rm ${env.SVC} --force 2> /dev/null || true
