@@ -52,17 +52,9 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'hub_token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                         sshCommand remote: remote, command: """
-                            set -ex ; set -o pipefail
-                            if ! command -v docker-compose &> /dev/null; then
-                                echo 'docker-compose не найден, устанавливаю...'
-                                sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-                                sudo chmod +x /usr/local/bin/docker-compose
-                            fi
-                            docker-compose up -d
-                            echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin
-                            docker pull "${env.REPO}:${env.BUILD_ID}"
-                            docker rm ${env.SVC} --force 2> /dev/null || true
-                            docker run -d -it -p ${env.PORT}:${env.PORT} --name ${env.SVC} "${env.REPO}:${env.BUILD_ID}"
+                            git clone "$git_url" /var/www/action
+                            docker-compose -f /var/www/action/docker-compose.yml up -d
+            
                         """
                     }
                 }
