@@ -10,7 +10,7 @@ pipeline {
         REPO = "zabella/go_workers"
         DOCKER_IMAGE = 'golang'
         DOCKER_TAG = 'latest'
-        HOST = "3.94.85.77"
+        HOST = "44.203.170.192"
         TOKEN = credentials('tokentell')
         CHAT_ID = "683028341"
         LINK = "<a href=\"${BUILD_URL}\">${JOB_NAME} #${BUILD_NUMBER}</a>"
