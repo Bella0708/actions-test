@@ -37,44 +37,44 @@ pipeline {
         }
 
         stage('Build and Push Docker Image') {
-    steps {
-        script {
-            def image = docker.build("${env.REPO}:${env.BUILD_ID}")
-            docker.withRegistry('https://registry-1.docker.io', 'hub_token') {
-                image.push()
+            steps {
+                script {
+                    def image = docker.build("${env.REPO}:${env.BUILD_ID}")
+                    docker.withRegistry('https://registry-1.docker.io', 'hub_token') {
+                        image.push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy application') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'hub_token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    script {
+                        sshCommand remote: remote, command: """
+                            set -ex ; set -o pipefail
+                            if ! command -v docker-compose &> /dev/null; then
+                                echo 'docker-compose не найден, устанавливаю...'
+                                sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+                                sudo chmod +x /usr/local/bin/docker-compose
+                            fi
+                            docker-compose up -d
+                            echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin
+                            docker pull "${env.REPO}:${env.BUILD_ID}"
+                            docker rm ${env.SVC} --force 2> /dev/null || true
+                            docker run -d -it -p ${env.PORT}:${env.PORT} --name ${env.SVC} "${env.REPO}:${env.BUILD_ID}"
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Test Application') {
+            steps {
+                sh 'docker exec -i $(docker ps -q -f "ancestor=${env.REPO}:${env.BUILD_ID}") npx mocha test/app.test.js'
             }
         }
     }
-}
-
-    stage('Deploy application') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'hub_token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-            script {
-                sshCommand remote: remote, command: """
-                    set -ex ; set -o pipefail
-                    if ! command -v docker-compose &> /dev/null; then
-                        echo 'docker-compose не найден, устанавливаю...'
-                        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-                        sudo chmod +x /usr/local/bin/docker-compose
-                    fi
-                    docker-compose up -d
-                    echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin
-                    docker pull "${env.REPO}:${env.BUILD_ID}"
-                    docker rm ${env.SVC} --force 2> /dev/null || true
-                    docker run -d -it -p ${env.PORT}:${env.PORT} --name ${env.SVC} "${env.REPO}:${env.BUILD_ID}"
-                """
-            }
-        }
-    }
-}
-
-stage('Test Application') {
-    steps {
-        sh 'docker exec -i $(docker ps -q -f "ancestor=${env.REPO}:${env.BUILD_ID}") npx mocha test/app.test.js'
-    }
-}
-
     post {
         success {
             script {
@@ -88,7 +88,7 @@ stage('Test Application') {
         }
         aborted {
             script {
-                sh "curl -X POST -H 'Content-Type: application/json' -d '{\"chat_id\": \"${CHAT_ID}\", \"text\": \"${LINK}\n⚪️ Deploy aborted! \", \"parse_mode\": \"HTML\", \"disable_notification\": false}' \"https://api.telegram.org/bot${TOKEN}/sendMessage\""
+                sh "curl -X POST -H 'Content-Type: application/json' -d '{\"chat_id\": \"${CHAT_ID}\\", \"text\": \"${LINK}\n⚪️ Deploy aborted! \", \"parse_mode\": \"HTML\", \"disable_notification\": false}' \"https://api.telegram.org/bot${TOKEN}/sendMessage\""
             }
         }
     }
