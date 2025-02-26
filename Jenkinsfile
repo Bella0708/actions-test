@@ -37,32 +37,33 @@ pipeline {
         }
 
         stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    def image = docker.build("${env.REPO}:${env.BUILD_ID}")
-                    docker.withRegistry('https://registry-1.docker.io', 'hub_token') {
-                        image.push()
-                    }
-                }
+    steps {
+        script {
+            def image = docker.build("${env.REPO}:${env.BUILD_ID}")
+            docker.withRegistry('https://registry-1.docker.io', 'hub_token') {
+                image.push()
             }
         }
+    }
+}
 
-        stage('Deploy application') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'hub_token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    script {
-                        sshCommand remote: remote, command: """
-                            set -ex ; set -o pipefail
-                            sh 'docker-compose up -d
-                            docker login -u ${USERNAME} -p ${PASSWORD}
-                            docker pull "${env.REPO}:${env.BUILD_ID}"
-                            docker rm ${env.SVC} --force 2> /dev/null || true
-                            docker run -d -it -p ${env.PORT}:${env.PORT} --name ${env.SVC} "${env.REPO}:${env.BUILD_ID}"
-                        """
-                    }
-                }
+stage('Deploy application') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'hub_token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            script {
+                sshCommand remote: remote, command: """
+                    set -ex ; set -o pipefail
+                    docker-compose up -d
+                    docker login -u ${USERNAME} -p ${PASSWORD}
+                    docker pull "${env.REPO}:${env.BUILD_ID}"
+                    docker rm ${env.SVC} --force 2> /dev/null || true
+                    docker run -d -it -p ${env.PORT}:${env.PORT} --name ${env.SVC} "${env.REPO}:${env.BUILD_ID}"
+                """
             }
         }
+    }
+}
+
 
         stage('Test Application') {
             steps {
