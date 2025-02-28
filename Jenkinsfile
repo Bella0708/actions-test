@@ -20,7 +20,7 @@ pipeline {
     stages {
         stage('Configure credentials') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_ssh_key', keyFileVariable: 'private_key', usernameVariable: 'username')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins_key', keyFileVariable: 'private_key', usernameVariable: 'username')]) {
                     script {
                         remote.name = "${env.HOST}"
                         remote.host = "${env.HOST}"
