@@ -71,7 +71,14 @@ pipeline {
                 sh 'docker exec -i $(docker ps -q -f "ancestor=${env.REPO}:${env.BUILD_ID}") npx mocha test/app.test.js'
             }
         }
+        stage('Cleanup Docker System') {
+            steps {
+                sh 'docker system prune -fa'
+            }
+        }
     }
+        
+
     post {
         success {
             script {
