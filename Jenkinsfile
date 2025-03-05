@@ -10,7 +10,7 @@ pipeline {
         REPO = "zabella/node"
         DOCKER_IMAGE = 'node'
         DOCKER_TAG = 'alpine'
-        HOST = "18.116.68.148"
+        HOST = "18.221.26.65"
         PORT = "3000"
         SVC = "action"
         TOKEN = credentials('tokentell')
